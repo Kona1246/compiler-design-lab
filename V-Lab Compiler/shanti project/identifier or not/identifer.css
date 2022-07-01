@@ -1,0 +1,13 @@
+#footer {
+    position:absolute;
+    bottom:0;
+    width:100%;
+    background:#6cf;
+    text-align: center;
+    background: #FFF;
+}
+
+#inp {
+    border-color: black;
+    background-color: blanchedalmond;
+}

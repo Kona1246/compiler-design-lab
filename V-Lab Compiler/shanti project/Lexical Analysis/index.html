@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lexical Analysis</title>
+    <link type="text/css" href="./vendor/css/codemirror.5.51.0.min.css" rel="stylesheet"/>
+    <link type="text/css" href="./vendor/css/monokai.5.51.0.min.css" rel="stylesheet"/>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #Header {
+            text-align: center;
+            font-size: 30px;
+            font-weight: 100;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+            background: #FAFAFA;
+        }
+
+        #LangInfo {
+            font-size: 14px;
+            padding: 5px 0;
+            margin-bottom: 10px;
+            color: #777;
+            letter-spacing: 0px;
+        }
+
+        #LangInfo a {
+            color: #6495ed;
+            padding-left: 3px;
+        }
+
+        #Dashboard {
+            width: 900px;
+            margin: 10px auto;
+        }
+
+        #Preferences {
+            text-align: center;
+            width: 120px;
+            overflow-y: hidden;
+            height: 205px;
+        }
+
+        .lang-choose {
+            display: inline-block;
+            width: 100px;
+            border-top: 1px solid #bbb;
+            border-left: 1px solid #bbb;
+            border-right: 1px solid #bbb;
+            padding: 5px 2px;
+            background: #fafafa;
+        }
+
+        .lang-choose a {
+            display: inline-block;
+            width: 100%;
+            text-decoration: none;
+            color: #888;
+        }
+
+        .lang-choose.lang-choose-first {
+            border-top-left-radius: 3px;
+            border-top-right-radius: 3px;
+        }
+
+        .lang-choose.lang-choose-last {
+            border-bottom-left-radius: 3px;
+            border-bottom-right-radius: 3px;
+            border-bottom: 1px solid #bbb;
+        }
+
+        .lang-choose:hover, .lang-choose-select {
+            cursor: pointer;
+            background: #ddd;
+        }
+
+        #Input {
+            float: left;
+        }
+
+        #Input .CodeMirror {
+            width: 722px;
+            height: 222px;
+            border: 1px solid #ddd;
+        }
+
+        #Textarea {
+            display: block;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+            /*border-radius: 5px;*/
+            padding: 10px;
+            width: 900px;
+            height: 300px;
+            resize: none;
+            background: #FFF;
+        }
+
+        #ButtonCodearea{
+            cursor: pointer;
+        }
+        
+        #Show {
+            width: 100%;
+            min-height: 50px;
+            margin: 30px auto;
+            margin-top: 65px;
+        }
+
+        #TokenList {
+            width: 900px;
+            min-height: 50px;
+            margin: 0 auto;
+        }
+
+        .token {
+            display: inline-block;
+            min-width: 30px;
+            text-align: center;
+            font-size: 15px;
+            color: #FFF;
+            border-radius: 100px;
+            margin: 5px;
+            height: 25px;
+            line-height: 25px;
+            padding: 2px 8px;
+        }
+
+
+
+
+        
+        .token.token-Operator {
+            background: #ddb0b0;
+        }
+
+        .token.token-DoubleOperator {
+            background: #ddb0b0;
+        }
+
+        .token.token-Symbol {
+            background: #ddb0b0;
+        }
+
+        .token.token-Whitespace {
+            background: #ddb0b0;
+        }
+
+        .token.token-LineFeed {
+            background: #ddb0b0;
+        }
+
+        .token.token-Keyword {
+            background: #ddb0b0;
+        }
+
+        .token.token-Identifier {
+            /*background: #a9a9a9;*/
+            background: #ddb0b0;
+        }
+
+        .token.token-Number {
+            background: #ddb0b0;
+        }
+
+        .token.token-Float {
+            background: #ddb0b0;
+        }
+
+        .token.token-String {
+            background: #ddb0b0;
+        }
+
+        .token.token-Char {
+            background: #ddb0b0;
+        }
+
+        .token.token-Unknown {
+            background: #ddb0b0;
+            color: #fff;
+        }
+
+        .token.token-al {
+            background: #ddb0b0;
+        }
+
+        .token.token-G {
+            background: #ddb0b0;
+        }
+
+        .token.token-o {
+            background: #ddb0b0;
+        }-->
+
+        .AllTokenList {
+            display: block;
+        }
+
+        .opacity {
+            opacity: 0.2;
+        }
+
+        .header-a-link {
+            text-decoration: none;
+            color: rgb(113, 105, 105);
+        }
+
+       
+
+        #busuanzi_value_site_uv, #busuanzi_value_site_pv {
+            padding: 0 2px;
+        }
+
+        #busuanzi_value_site_pv_change, #busuanzi_value_site_uv_change {
+            color: #08964e;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        #Footer {
+            background: #FFF;
+            margin-top: 30px;
+            
+        }
+
+        #Footer p {
+            padding: 0;
+            margin: 0;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <div id="Header">
+        <a href="#" class="header-a-link">Lexical Analysis</a>
+    </div>
+
+    <div id="Dashboard">
+        
+            <label>
+                <textarea id="Textarea" autofocus="autofocus"></textarea>
+            </label>
+        </div>
+        <ul id="Preferences">
+        </ul>
+    </div>
+
+    <div id="Show">
+        <div id="TokenList">
+        </div>
+    </div>
+
+    <div style="margin-top: 35px;border-top: 1px solid #ddd;border-bottom: 1px solid #ddd;">
+        <div style="text-align: center;background: #eee;padding: 20px 0;">
+            <div class="AllTokenList AllTokenListDefault">
+                
+            </div>
+            <div class="AllTokenList AllTokenListGoal">
+                <span class="token token-Unknown" tokentype="Unknown" tokenvalue="Unknown">Click Here to generate all tokens</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="Footer">
+        <p style="text-align: center;font-size:20px;padding:3px 0;"><span style="color:#777;">All rights reserved <a
+                href="#">@Group 13</a></span></p>
+        <p style="text-align: center;font-size:20px;padding:3px 0;"><span style="color:#777;">© 2022   , IEM Kolkata</span>
+        </p>
+    </div>
+</div>
+<script src="./vendor/js/jquery.2.2.0.min.js"></script>
+<script src="./vendor/js/codemirror.5.51.0.min.js"></script>
+<script src="./vendor/js/clike.5.51.0.min.js"></script>
+<script src="./vendor/js/sql.5.51.0.min.js"></script>
+<script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script>
+    function getParam(param) {
+        let slices = window.location.href.split('?');
+        if (slices[1]) {
+            let searchString = slices[1];
+            let params = searchString.split('&');
+            for (let i = 0; i <= params.length - 1; i++) {
+                let v = params[i];
+                let arr = v.split('=');
+                if (arr[0] && arr[0] === param) {
+                    return arr[1];
+                }
+            }
+        }
+        return false;
+    }
+    function startParseInput() {
+        let stream = codearea === 'editor' ? editor.getValue() : $('#Textarea').val();
+        lexer.start(stream);
+        console.log(lexer);
+        $('#TokenList').html('');
+        lexer.DFA.result.tokens.forEach((token) => {
+            let type = token.type;
+            let value = token.value;
+            let classToken = 'token-' + type;
+            if (value === '\n') {
+                value = '\\n';
+            }
+            if (value.replace(/\t+/g, ' ') === ' ') {
+                value = '\\t';
+            }
+
+            $('#TokenList').append('<span class="token ' + classToken + '" tokentype="' + type + '" tokenvalue="' + value + '">' + value + '</span>');
+        });
+    }
+    let lang = getParam('lang');
+    let mode = "text/plain";
+    if (lang === 'c') {
+        mode = "text/x-csrc";
+        $('.lang-choose-c').addClass('lang-choose-select');
+        document.write('<script src="./package/c-lexer.min.js"><\/script>');
+        document.write('<script src="./test/auto/c-lexer_test.js"><\/script>');
+        $('.AllTokenListDefault').fadeIn();
+        $('#LangInfo').html("C is a general programming language that is extremely popular, simple and flexible ... please check <a target='_blank' href='https://en.wikipedia.org/wiki/C_(programming_language)'>detail</a>");
+    } else if (lang === 'sql') {
+        mode = "text/x-sql";
+        $('.lang-choose-sql').addClass('lang-choose-select');
+        document.write('<script src="./package/sql-lexer.min.js"><\/script>');
+        document.write('<script src="./test/auto/sql-lexer_test.js"><\/script>');
+        $('.AllTokenListDefault').fadeIn();
+        $('#LangInfo').html("SQL is a general programming language used to manage relational database ... please check <a target='_blank' href='https://en.wikipedia.org/wiki/SQL'>detail</a>");
+    } else if (lang === 'goal') {
+        $('.lang-choose-goal').addClass('lang-choose-select');
+        document.write('<script src="./package/goal-lexer.min.js"><\/script>');
+        document.write('<script src="./test/auto/goal-lexer_test.js"><\/script>');
+        $('.AllTokenListGoal').fadeIn();
+        $('#LangInfo').html("Goal language is a problem from leetcode ... please check <a target='_blank' href='https://leetcode.com/problems/goal-parser-interpretation/'>detail</a>");
+    } else {
+        window.location.href = window.location.pathname + '?lang=c';
+    }
+
+    let CODEAREA_TYPE_TEXTAREA = 'textarea';
+    let CODEAREA_TYPE_EDITOR = 'editor';
+    let codearea = getParam('codearea');
+    if (codearea !== CODEAREA_TYPE_TEXTAREA && codearea !== CODEAREA_TYPE_EDITOR) {
+        codearea = CODEAREA_TYPE_TEXTAREA;
+    }
+    if (codearea === CODEAREA_TYPE_TEXTAREA) {
+        $('#ButtonCodearea').text('Dark Mode / ON');
+    } else {
+        $('#ButtonCodearea').text('Dark Mode / OFF');
+    }
+
+    setTimeout(function () {
+        $('#Textarea').on('input', function () {
+            $('#TokenList').html('<p style="color: #888;">Lexer is working... ...</p>');
+            startParseInput();
+        });
+        $('#Textarea').blur(function () {
+            startParseInput();
+        });
+        $(document).on('mouseenter', '.token', function () {
+            let type = $(this).attr('tokentype');
+            $(".token").addClass('opacity');
+            $(".token-" + type).removeClass('opacity');
+        });
+        $(document).on('mouseleave', '.token', function () {
+            $(".token").removeClass('opacity');
+        });
+        $('#ButtonCodearea').on('click', function () {
+            if (codearea === CODEAREA_TYPE_TEXTAREA) {
+                window.location.href = window.location.pathname + '?lang=' + lang + '&codearea=' + CODEAREA_TYPE_EDITOR;
+            } else {
+                window.location.href = window.location.pathname + '?lang=' + lang + '&codearea=' + CODEAREA_TYPE_TEXTAREA;
+            }
+        });
+        let defaultInput = "";
+        if (lang === 'c') {
+            defaultInput = "int a = 10;\n" +
+                "int b = 20;\n" +
+                "int c = 20;\n" +
+                "\n" +
+                "float f = 928.2332;\n" +
+                "char b = 'b';\n" +
+                "\n" +
+                "if(a == b){\n" +
+                "    printf(\"Hello, World! \\\"\");\n" +
+                "}else if(b!=c){\n" +
+                "    printf(\"Hello, World! \\n Hello, World!\");\n" +
+                "}else{\n" +
+                "    printf(\"Hello\\n\");\n" +
+                "}";
+        } else if (lang === 'goal') {
+            defaultInput = "(al)G(al)()()G()()()G()(al)"
+        } else {
+            defaultInput = "select * from test where id >= 10 and id <10 and name='test';"
+        }
+
+        if (codearea === 'editor') {
+            window.editor = CodeMirror.fromTextArea(document.getElementById('Textarea'), {
+                mode: mode,
+                theme: "monokai",
+                indentUnit: 4,
+                lineWrapping: true,
+                indentWithTabs: true,
+                smartIndent: true,
+                lineNumbers: true,
+                matchBrackets: true,
+                autofocus: true,
+            });
+            editor.setValue(defaultInput);
+            editor.on('change', function () {
+                startParseInput();
+            });
+            editor.on('blur', function () {
+                startParseInput();
+            });
+        }
+
+        $('#Textarea').val('Sample code is being displayed, please wait...');
+        setTimeout(function () {
+            $('#Textarea').val(defaultInput);
+            startParseInput();
+            let caseList = returnCaseList();
+            console.log("Automated testing has " + caseList.length + ' cases, now is running ...');
+            for (let i = 0; i <= caseList.length - 1; ++i) {
+                let outputs = caseList[i].output;
+                lexer.start(caseList[i].input);
+
+                let failed = false;
+                let tokens = lexer.DFA.result.tokens;
+                if (!isNaN(outputs)) {
+                    failed = outputs !== tokens.length;
+                } else {
+                    for (let j = 0; j <= tokens.length - 1; ++j) {
+                        if (typeof outputs[j] === 'undefined' || outputs[j].type !== tokens[j].type || outputs[j].value !== tokens[j].value) {
+                            failed = true;
+                        }
+                    }
+                }
+
+                if (failed) {
+                    alert('Automated testing is failed');
+                    console.error('Case ' + (i + 1) + ': failed | ' + 'input = ' + caseList[i].input);
+                } else {
+                    console.info("\x1B[32m" + 'Case ' + (i + 1) + ': success | ' + 'input = ' + caseList[i].input + "\x1B[0m");
+                }
+            }
+            console.log('Automated testing is Done');
+        }, 100);
+        setTimeout(function () {
+
+            let lastPv = parseInt(localStorage.getItem('pv'));
+            let lastUv = parseInt(localStorage.getItem('uv'));
+            if (isNaN(lastPv) || isNaN(lastUv) || lastPv <= 0 || lastUv <= 0) {
+                lastPv = 0;
+                lastUv = 0;
+            }
+
+            let pv = parseInt($("#busuanzi_value_site_pv").text());
+            let uv = parseInt($("#busuanzi_value_site_uv").text());
+            if (isNaN(pv) || isNaN(uv) || pv <= 0 || uv <= 0) {
+                return;
+            }
+            localStorage.setItem('pv', pv);
+            localStorage.setItem('uv', uv);
+
+            let pvChange = pv - lastPv;
+            let uvChange = uv - lastUv;
+            if (pvChange) {
+                $("#busuanzi_value_site_pv_change").text("↑" + pvChange);
+            }
+            if (uvChange) {
+                $("#busuanzi_value_site_uv_change").text("↑" + uvChange);
+            }
+        }, 4000);
+    }, 100);
+
+</script>
+</body>
+</html>
